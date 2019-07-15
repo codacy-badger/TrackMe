@@ -3,8 +3,12 @@ package com.triple.trackme.CurrentTrack;
 import android.annotation.SuppressLint;
 import android.location.Location;
 
+import com.triple.trackme.CurrentUser.CurrentUserData;
+import com.triple.trackme.Data.Storage.Position;
+import com.triple.trackme.Data.Storage.Track;
 import com.triple.trackme.GoogleMapService;
 
+import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 
@@ -36,11 +40,39 @@ class CurrentTrackData {
         positions.add(newLocation);
     }
 
+    Location getLastLocation() {
+        Location lastLocation = null;
+        if (positions.size() > 0) {
+            lastLocation = positions.get(positions.size() - 1);
+        }
+        return lastLocation;
+    }
+
     private void updateDistance(Location newLocation) {
         if (positions.size() > 1) {
             Location prevLocation = positions.get(positions.size() - 1);
             trackDistance += GoogleMapService.distanceBetweenCoordinates(prevLocation, newLocation);
         }
+    }
+
+    void saveCurrentTrackToFile() {
+        Track track = currentTrackToTrackData();
+        CurrentUserData.addTrack(track);
+    }
+
+    private Track currentTrackToTrackData() {
+        Track track = new Track();
+        track.distance = trackDistance;
+        track.time = trackSeconds;
+        double avgSpeed = (trackDistance / trackSeconds) * 3.6;
+        track.avgSpeed = avgSpeed;
+        for (Location loc : positions) {
+            Position pos = new Position();
+            pos.latitude = loc.getLatitude();
+            pos.longitude = loc.getLongitude();
+            track.positions.add(pos);
+        }
+        return track;
     }
 
     @SuppressLint("DefaultLocale")

@@ -11,8 +11,11 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,6 +32,9 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.triple.trackme.CurrentTrack.CurrentTrackView;
+import com.triple.trackme.CurrentUser.CurrentUserData;
+
+import java.io.File;
 
 public class MainActivity extends FragmentActivity implements OnMapReadyCallback, OnMapLoadedCallback, LocationListener {
 
@@ -36,7 +42,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
     private ProgressDialog progressDialog;
 
     public static final int REQUEST_ID_ACCESS_COURSE_FINE_LOCATION = 100;
-
+    public static File filesDir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,10 +54,23 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        setViewTrackPanelNotClickable();
 
+        filesDir = getFilesDir();
+        CurrentUserData.initializeUserData(getFilesDir());
         CurrentTrackView.initialize(this, (TextView) findViewById(R.id.timeVal),
                 (TextView) findViewById(R.id.distanceVal), (TextView) findViewById(R.id.speedVal),
                 (ImageButton) findViewById(R.id.buttonPause), (ImageButton) findViewById(R.id.buttonPlay));
+    }
+
+    private void setViewTrackPanelNotClickable() {
+        View view = findViewById(R.id.viewCurrentTrackPanel);
+        view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return true;
+            }
+        });
     }
 
     private void updateWindow() {
@@ -169,7 +188,7 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onLocationChanged(Location location) {
-        CurrentTrackView.newLocation(location);
+        CurrentTrackView.newLocation(location, map);
     }
 
     @Override
@@ -183,20 +202,31 @@ public class MainActivity extends FragmentActivity implements OnMapReadyCallback
 
 
     public void clickStartTrackButton(View view) {
+        final Animation animScale = AnimationUtils.loadAnimation(this, R.anim.scale);
+        view.startAnimation(animScale);
         CurrentTrackView.start();
     }
 
     public void clickPauseTrackButton(View view) {
+        final Animation animScale = AnimationUtils.loadAnimation(this, R.anim.scale);
+        view.startAnimation(animScale);
         CurrentTrackView.pause();
     }
 
     public void clickStopTrackButton(View view) {
+        final Animation animScale = AnimationUtils.loadAnimation(this, R.anim.scale);
+        view.startAnimation(animScale);
         CurrentTrackView.stop();
     }
 
-    public void clickProfileButton(View view) { }
+    public void clickProfileButton(View view) {
+        final Animation animScale = AnimationUtils.loadAnimation(this, R.anim.scale_interface);
+        view.startAnimation(animScale);
+    }
 
     public void clickCurrentPositionButton(View view) {
+        final Animation animScale = AnimationUtils.loadAnimation(this, R.anim.scale_interface);
+        view.startAnimation(animScale);
         showMyLocation();
     }
 
